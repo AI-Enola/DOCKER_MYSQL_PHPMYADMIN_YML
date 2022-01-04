@@ -1,0 +1,71 @@
+# Author : LA
+# Description : Run MYSQL and PHPMYADMIN on Docker container.
+# Version Mid 2020 - Not updated
+# Public Version
+
+version: "3"
+
+networks:
+  main_sql_net: #Network is important, both services need to be in the same network - NET NAME CAN BE CHANGED
+
+# SERVICES - MYSQL AND PHPMYADMIN
+services:
+
+# PHPMYADMIN START
+  phpmyadmin:
+  
+    image: phpmyadmin/phpmyadmin # Get IMAGE
+    container_name: pma_main # CONTAINER NAME
+    
+    environment:
+      PMA_PORT: 3306 
+      PMA_HOST: mysql
+      
+    volumes:
+     - /sessions
+     - ~/docker/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
+     - /custom/phpmyadmin/theme/:/www/themes/theme/
+     
+    ports:
+      - "8020:80" # PHPMYADMIN LISTENING PORT - USE 8020 TO ACCESS WEB UI - CAN BE CHANGED
+      
+    links : # LINK TO MYSQL SERVICE
+      - mysql
+
+    networks: # LINK TO DOCKER NETWORK
+      - main_sql_net
+    
+    depends_on: # START AFTER MYSQL HAS STARTED
+      - mysql
+
+
+# PHPMYADMIN END
+
+# MYSQL START
+
+  mysql:
+  
+    image: mysql:5.7.29 # Get IMAGE
+    container_name: mysql_main # CONTAINER NAME
+    
+    tty: true # Terminal CMD
+    
+    ports:
+      - "3306:3306" # SQL LISTENING PORT
+      
+    volumes:
+      - ./mysql:/var/lib/mysql # MYSQL REPOSITORY WILL APPEAR IN PROJECT REPOSITORY
+      
+    environment: # SQL SETTINGS -  CAN BE CHANGED 
+      MYSQL_DATABASE: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+      
+    networks: # LINK TO DOCKER NETWORK
+      - main_sql_net
+      
+# MYSQL END
+
